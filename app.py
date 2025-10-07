@@ -537,7 +537,7 @@ def executive_overview(df_raw):
             <div class="brand-subtitle">Executive Overview </div>
         </div>
         <div class="logo-space">
-            MuSigma Logo
+            Mu Sigma
         </div>
     </div>
     """, unsafe_allow_html=True)
