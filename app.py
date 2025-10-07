@@ -285,7 +285,7 @@ st.markdown(f"""
 # ---------- Configuration & Data Path ----------
 
 #  IMPORTANT: Replace with your actual path if needed
-ABSOLUTE_DATA_PATH = r"C:\Users\vyshnavi.mahankali\Downloads\attendance_app\attendance_app\data\attendance.xlsx" 
+ABSOLUTE_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "attendance.xlsx") 
 
 DATA_FILE = ABSOLUTE_DATA_PATH
 if not os.path.exists(ABSOLUTE_DATA_PATH):
