@@ -537,7 +537,7 @@ def executive_overview(df_raw):
             <div class="brand-subtitle">Executive Overview </div>
         </div>
         <div class="logo-space">
-            <img src="https://via.placeholder.com/200x60/0066cc/ffffff?text=MuSigma+Logo" alt="MuSigma Logo">
+            MuSigma Logo
         </div>
     </div>
     """, unsafe_allow_html=True)
