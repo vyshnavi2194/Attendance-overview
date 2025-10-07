@@ -1,80 +1,113 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Executive Dashboard - Mu Sigma</title>
-  <style>
-    /* New Consolidated CSS Structure */
-    :root {
-      --mu-primary: #1976D2; --mu-secondary: #0D47A1; --mu-accent: #FF9800;
-      --mu-light: #FFFFFF; --bg-color: #F8F9FA; --card-bg: var(--mu-light);
-      --text-dark: #212529; --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.08);
-      --shadow-header: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    /* Base Body and Header Styles */
-    body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-dark); margin: 0; padding: 20px; }
-    .header-bar { position: fixed; top:0; left:0; width:100%; height:60px; background: var(--mu-light); color: var(--text-dark); display:flex; align-items:center; padding:0 30px; font-size:18px; font-weight:600; box-shadow: var(--shadow-header); z-index:100; border-bottom: 1px solid #E0E0E0; }
-    .logo-container { display: flex; align-items: center; margin-right: 30px; }
-    .logo-container img { height: 35px; margin-right: 10px; }
-    .header-bar a { color: var(--text-dark); text-decoration:none; margin-left:25px; font-weight:500; }
-    .header-bar a:hover { color: var(--mu-primary); }
-
-    /* Card, Heading, and Section Styles */
-    .card { background: var(--card-bg); color: var(--text-dark); padding:30px; border-radius:12px; margin-top:80px; box-shadow: var(--shadow-card); }
-    h2,h3,h4 { color: var(--text-dark); border-bottom:2px solid var(--mu-primary); padding-bottom:8px; margin-top:0; margin-bottom: 20px; }
-    .metric-grid { display:flex; justify-content:space-around; gap:20px; flex-wrap:wrap; margin-bottom:40px; }
-    .metric-box { background: var(--mu-light); padding:25px; border-radius:12px; flex:1 1 20%; text-align:center; box-shadow: 0 6px 15px rgba(0,0,0,0.1); min-width:180px; border-top: 4px solid var(--mu-primary); }
-    .metric-box h3 { color: var(--mu-primary); font-size:2.5em; margin:5px 0 5px 0; border-bottom: none; padding-bottom: 0; }
-    .metric-box p { color: var(--text-dark); font-weight:600; margin:0; font-size: 1.0em; }
-    .metric-box-anomaly { border-top: 4px solid var(--mu-accent) !important; background: #FFF3E0 !important;}
-    .section-flex { display:flex; gap:30px; flex-wrap:wrap; justify-content:space-between; }
-    .section-left, .section-right { background: var(--mu-light); border-radius:12px; padding:25px; box-shadow:0 8px 20px rgba(0,0,0,0.08); }
-    .section-left { flex:0 0 65%; }
-    .section-right { flex:0 0 30%; }
-    .chart-card img { max-width:100%; border-radius:10px; border:1px solid #E0E0E0; margin-top:10px; }
-    .recommendation { background:#E3F2FD; padding:20px; border-radius:10px; font-weight:600; color: var(--mu-primary); border-left: 5px solid var(--mu-primary); }
-    .data-table { width:100%; border-collapse:collapse; margin-top:15px; font-size:0.95em; }
-    .data-table thead tr { background-color: var(--mu-primary); color: var(--mu-light); }
-    .data-table th, .data-table td { padding: 12px; text-align: left; }
-    .data-table tbody tr { background-color:#fefefe; color:var(--text-dark); border-bottom: 1px solid #eee;}
-    .data-table tbody tr:nth-child(even) { background-color: #f8f8f8; }
-    .data-table tbody tr:hover { background-color: #e0f7fa; }
-    @media(max-width:1200px) { .section-left,.section-right { flex:0 0 100%; } }
-  </style>
+    <meta charset="utf-8">
+    <title>Executive Dashboard - Mu Sigma</title>
+    <link rel="stylesheet" href="/static/style.css"> 
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* Add any filter row custom styles here if desired, optional */
+        .filter-row {
+            margin-bottom: 40px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .filter-row select {
+            padding: 8px 18px;
+            border-radius: 7px;
+            margin-right: 20px;
+            font-size: 1em;
+            background: #fff;
+            color: var(--text-dark);
+            border: 1px solid #ccc;
+            min-width:180px;
+        }
+        .filter-row label { font-weight:700; color:var(--mu-primary); margin-right: 8px; }
+        @media(max-width:700px) {
+            .filter-row select, .filter-row label { display:block; margin-bottom:15px; }
+        }
+    </style>
+    <script>
+        function submitFilters() {
+            // Use GET method for filters
+            document.getElementById("filters-form").submit();
+        }
+    </script>
 </head>
 <body>
-  <div class="header-bar">
-    <div class="logo-container">
-      <img src="/static/mu_logo_new.png" alt="Mu Sigma Logo">
-    </div>
-    EXECUTIVE DASHBOARD
-    <a href="/">HOME</a>
-    <a href="/employee">EMPLOYEE ANALYSIS</a>
-    <a href="/account">ACCOUNT ANALYSIS</a>
-  </div>
-
-  <div class="card">
-    <h2>Company-Wide Attendance Health Overview</h2>
-    {% if error %}<p style="color:var(--mu-primary);font-weight:bold;">{{ error }}</p>{% endif %}
-    <div class="metric-grid">
-      <div class="metric-box"><p>Total Employees</p><h3>{{ total_employees }}</h3></div>
-      <div class="metric-box"><p>Avg. Focused (Bay) Hrs</p><h3>{{ avg_bay }}</h3></div>
-      <div class="metric-box"><p>Avg. Break Hrs</p><h3>{{ avg_break }}</h3></div>
-      <div class="metric-box metric-box-anomaly"><p>Anomaly Rate</p><h3 style="color:var(--mu-accent);">{{ anomaly_rate }}%</h3></div>
+    <div class="header-bar">
+        <div class="logo-container">
+            <img src="/static/mu_logo_new.png" alt="Mu Sigma Logo">
+        </div>
+        EXECUTIVE DASHBOARD
+        <a href="/">HOME</a>
+        <a href="/employee">EMPLOYEE ANALYSIS</a>
+        <a href="/account">ACCOUNT ANALYSIS</a>
     </div>
 
-    <div class="section-flex">
-      <div class="section-left">
-        <div class="chart-card"><h4>Overall Behavioral Clustering</h4><img src="{{ cluster_chart }}" alt="Cluster Chart"></div>
-        <div class="chart-card"><h4>Company Office Hours Distribution</h4><img src="{{ office_hist }}" alt="Office Histogram"></div>
-        <div class="chart-card"><h4>Bay vs Break Comparison</h4><img src="{{ bay_break }}" alt="Bay Break Chart"></div>
-      </div>
-      <div class="section-right">
-        <div class="chart-card"><h4>Top 5 Anomaly Employees</h4>{{ anomaly_table | safe }}</div>
-        <div class="chart-card"><h4>Top 5 Accounts by Unbilled %</h4>{{ account_table | safe }}</div>
-        <div class="recommendation"><h4>Executive Recommendation</h4><p>{{ recommendation }}</p></div>
-      </div>
+    <div class="card">
+        <h2>Company-Wide Attendance Health Overview</h2>
+        {% if error %}<p style="color:var(--mu-primary);font-weight:bold;">{{ error }}</p>{% endif %}
+        
+        <form id="filters-form" method="GET" action="{{ url_for('overview') }}" class="filter-row">
+            <label for="account">Account Code:</label>
+            <select name="account" id="account" onchange="submitFilters()">
+                {% for acc in accounts %}
+                    <option value="{{ acc }}" {% if selected_account == acc %}selected{% endif %}>{{ acc }}</option>
+                {% endfor %}
+            </select>
+            <label for="designation">Designation:</label>
+            <select name="designation" id="designation" onchange="submitFilters()">
+                {% for d in designations %}
+                    <option value="{{ d }}" {% if selected_designation == d %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <div class="metric-grid">
+            <div class="metric-box"><p>Employees</p><h3>{{ total_employees }}</h3></div>
+            <div class="metric-box"><p>% Billed</p><h3>{{ (100 - unbilled_pct | float) | round(1) }}%</h3></div>
+            <div class="metric-box"><p>Avg. Office hrs</p><h3>{{ avg_office_hrs | float | round(1) }} hrs</h3></div>
+            <div class="metric-box"><p>Avg. Leaves</p><h3>{{ avg_leaves | float | round(1) }}</h3></div>
+            <div class="metric-box"><p>Exceptions</p><h3>{{ total_exemptions }}</h3></div>
+            <div class="metric-box"><p>Unallocated</p><h3>{{ total_unallocated }}</h3></div>
+        </div>
+        
+        <hr>
+
+        <h4>Executive Recommendation:</h4>
+        <p class="recommendation">{{ recommendation | safe }}</p>
+
+        <hr>
+
+        <h3>1. Workforce Distribution</h3>
+        {{ chart1_html | safe }}
+
+        <h3>2. Billing Status Analysis</h3>
+        <div class="chart-flex" style="flex-direction: column;">
+            {{ chart2_html | safe }}
+        </div>
+        <div style="margin-top: 20px;">
+            {{ chart3_html | safe }}
+        </div>
+
+        <h3>3. Productivity & Focus</h3>
+        <div class="chart-flex" style="flex-direction: column;">
+            {{ chart4_html | safe }}
+        </div>
+        <div style="margin-top: 20px;">
+            {{ chart5_html | safe }}
+        </div>
+
+        <h3>4. Attendance & Leaves</h3>
+        {{ chart6_html | safe }}
+
+        <h3>5. Shift Patterns</h3>
+        {{ chart7_html | safe }}
+
+        <h3>6. Risk & Exceptions</h3>
+        {{ chart8_html | safe }}
+
     </div>
-  </div>
 </body>
 </html>

@@ -1,82 +1,53 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Employee Level Analysis - Mu Sigma</title>
-  <style>
-    /* New Consolidated CSS Structure */
-    :root {
-      --mu-primary: #1976D2; --mu-secondary: #0D47A1; --mu-accent: #FF9800;
-      --mu-light: #FFFFFF; --bg-color: #F8F9FA; --card-bg: var(--mu-light);
-      --text-dark: #212529; --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.08);
-      --shadow-header: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    /* Base Body and Header Styles */
-    body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-dark); margin: 0; padding: 20px; padding-top: 80px; }
-    .header-bar { position: fixed; top:0; left:0; width:100%; height:60px; background: var(--mu-light); color: var(--text-dark); display:flex; align-items:center; padding:0 30px; font-size:18px; font-weight:600; box-shadow: var(--shadow-header); z-index:100; border-bottom: 1px solid #E0E0E0; }
-    .logo-container { display: flex; align-items: center; margin-right: 30px; }
-    .logo-container img { height: 35px; margin-right: 10px; }
-    .header-bar a { color: var(--text-dark); text-decoration:none; margin-left:25px; font-weight:500; }
-    .header-bar a:hover { color: var(--mu-primary); }
-
-    /* Card, Heading, Form, List Styles */
-    .card { background: var(--card-bg); color: var(--text-dark); padding:30px; border-radius:12px; margin-bottom:25px; box-shadow:var(--shadow-card); }
-    h2,h3,h4 { color: var(--text-dark); border-bottom:2px solid var(--mu-primary); padding-bottom:8px; margin-top:0; margin-bottom: 20px; }
-    form input[type=text] { padding:12px 15px; width:260px; border-radius:8px; border:1px solid #ddd; margin-right:15px; color: var(--text-dark); }
-    form button { background: var(--mu-primary); color: var(--mu-light); border:none; padding:12px 20px; font-weight:600; border-radius:8px; cursor:pointer; transition:0.3s; }
-    form button:hover { background: var(--mu-secondary); }
-    .chart-flex { display:flex; flex-wrap:wrap; justify-content:space-between; gap:30px; margin-top:20px; }
-    .chart-flex div { width:calc(50% - 15px); min-width:300px; }
-    .chart-flex img { width:100%; border-radius:10px; border: 1px solid #E0E0E0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    ul { list-style:none; padding-left:0; margin-top:15px; }
-    li { margin-bottom:10px; line-height:1.6; border-left:4px solid var(--mu-accent); padding-left:15px; color: var(--text-dark); background: #F4F7F9; padding: 10px; border-radius: 4px; }
-    .recommendation { background:#E3F2FD; border-radius:10px; padding:20px; font-weight:600; color: var(--mu-primary); margin-top:25px; border-left: 5px solid var(--mu-primary); }
-    @media(max-width:768px) { .chart-flex div { width:100%; } }
-  </style>
+	<meta charset="utf-8">
+	<title>Employee Level Analysis - Mu Sigma</title>
+	<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="header-bar">
-    <div class="logo-container">
-      <img src="/static/mu_logo_new.png" alt="Mu Sigma Logo">
-    </div>
-    EMPLOYEE DEEP DIVE
-    <a href="/">HOME</a>
-    <a href="/overview">DASHBOARD</a>
-    <a href="/account">ACCOUNT ANALYSIS</a>
-  </div>
+	<div class="header-bar">
+		<div class="logo-container">
+			<img src="/static/mu_logo_new.png" alt="Mu Sigma Logo">
+		</div>
+		EMPLOYEE DEEP DIVE
+		<a href="/">HOME</a>
+		<a href="/overview">DASHBOARD</a>
+		<a href="/account">ACCOUNT ANALYSIS</a>
+	</div>
 
-  <div class="card">
-    <h2>Individual Employee Analysis</h2>
-    <form method="POST">
-      <label>Enter Employee ID:</label>
-      <input type="text" name="emp_id" value="{{ emp_id if emp_id else '' }}" required>
-      <button type="submit">👤 Analyze</button>
-    </form>
-    {% if error %}
-      <p style="color:var(--mu-primary);font-weight:bold;">{{ error }}</p>
-    {% endif %}
-  </div>
+	<div class="card">
+		<h2>Individual Employee Analysis</h2>
+		<form method="POST">
+			<label>Enter Employee ID:</label>
+			<input type="text" name="emp_id" value="{{ emp_id if emp_id else '' }}" required>
+			<button type="submit">👤 Analyze</button>
+		</form>
+		{% if error %}
+			<p style="color:var(--mu-primary);font-weight:bold;">{{ error }}</p>
+		{% endif %}
+	</div>
 
-  {% if chart %}
-  <div class="card">
-    <h3>Results for Employee ID: {{ emp_id }}</h3>
+	{% if chart %}
+	<div class="card">
+		<h3>Results for Employee ID: {{ emp_id }}</h3>
 
-    <h4>Work Pattern Visualizations</h4>
-    <div class="chart-flex">
-      <div><img src="{{ chart }}" alt="Work Pattern Chart"></div>
-      <div><img src="{{ hist }}" alt="Bay Hours Distribution Histogram"></div>
-    </div>
+		<h4>Work Pattern Visualizations</h4>
+		<div class="chart-flex">
+			<div><img src="{{ chart }}" alt="Work Pattern Chart"></div>
+			<div><img src="{{ hist }}" alt="Bay Hours Distribution Histogram"></div>
+		</div>
 
-    <h4>Insights:</h4>
-    <ul>
-      {% for line in story %}
-        <li>{{ line | safe }}</li>
-      {% endfor %}
-    </ul>
+		<h4>Insights:</h4>
+		<ul>
+			{% for line in story %}
+				<li>{{ line | safe }}</li>
+			{% endfor %}
+		</ul>
 
-    <h4>Recommendation:</h4>
-    <p class="recommendation">{{ recommendation | safe }}</p>
-  </div>
-  {% endif %}
+		<h4>Recommendation:</h4>
+		<p class="recommendation">{{ recommendation | safe }}</p>
+	</div>
+	{% endif %}
 </body>
 </html>
