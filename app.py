@@ -1206,7 +1206,8 @@ def main():
     st.sidebar.markdown(f"""
         <div class='sidebar-header' style='text-align: center; color: white;'>
             <h2 class='sidebar-title' style='color: white; margin-bottom: 0;'>MuTaskSpark</h2>
-            <p class='sidebar-subtitle' style='color: #f0f0f0; font-size: 0.9rem; margin-top: 0;'>Analytics Dashboard</p>
+            <p class='sidebar-subtitle' style='color: #f0f0f0; font-size: 0.9rem; margin-top: 0;'>Transforming Data into Decisions</p>
+            
         </div>
 """, unsafe_allow_html=True)
 
