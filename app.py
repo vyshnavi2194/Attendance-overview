@@ -10,6 +10,8 @@ import plotly.graph_objects as go
 import streamlit as st
 import math
 import time
+import base64
+from PIL import Image
 warnings.filterwarnings("ignore")
 
 # Set Streamlit Page Configuration
@@ -23,6 +25,17 @@ MUSIGMA_DARK = "#4D0000"
 MUSIGMA_CARD_BG = "#F8F9FA"
 MUSIGMA_TABLE_HEADER = "#660000"
 MUSIGMA_TABLE_ROW = "#FFF5F5"
+
+# ---------- Logo Configuration ----------
+# Try multiple possible logo paths
+LOGO_PATHS = [
+    os.path.join(os.path.dirname(__file__), "static", "mu_logo_new.png"),
+    os.path.join(os.path.dirname(__file__), "mu_logo_new.png"),
+    os.path.join(os.getcwd(), "static", "mu_logo_new.png"),
+    os.path.join(os.getcwd(), "mu_logo_new.png"),
+    os.path.join(os.path.dirname(__file__), "assets", "mu_logo_new.png"),
+    os.path.join(os.getcwd(), "assets", "mu_logo_new.png"),
+]
 
 # Apply custom CSS for MuSigma branding with animations
 st.markdown(f"""
@@ -59,43 +72,52 @@ st.markdown(f"""
         font-family: 'Arial', sans-serif;
     }}
     
-    .logo-space {{
+    .logo-container {{
         width: 120px;
         height: 50px;
-        background: rgba(255,255,255,0.1);
-        border: 2px dashed rgba(255,255,255,0.3);
-        border-radius: 5px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 0.8rem;
+        background-color: white; /* ✅ Added background color */
+        border-radius: 8px;      /* optional: gives soft rounded corners */
+        padding: 4px;
     }}
     
-    /* Sidebar styling */
-    .css-1d391kg {{
-        background-color: {MUSIGMA_PRIMARY};
+    .logo-img {{
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
     }}
     
-    /* Navigation items */
-    .st-bb {{
-        background-color: transparent;
+    /* Sidebar styling - FIXED COLORS */
+    section[data-testid="stSidebar"] {{
+        background-color: {MUSIGMA_PRIMARY} !important;
     }}
     
-    .st-bc {{
-        background-color: {MUSIGMA_DARK};
+    section[data-testid="stSidebar"] .stRadio {{
+        background-color: {MUSIGMA_PRIMARY} !important;
+    }}
+    
+    section[data-testid="stSidebar"] .stRadio > div {{
+        background-color: {MUSIGMA_PRIMARY} !important;
         border-radius: 5px;
-        margin: 2px 0;
+        padding: 5px;
     }}
     
-    /* Radio button labels */
-    .st-bh, .st-bi {{
-        color: white;
+    section[data-testid="stSidebar"] label {{
+        color: white !important;
         font-weight: 500;
     }}
     
-    .st-eb {{
-        background-color: {MUSIGMA_SECONDARY};
+    section[data-testid="stSidebar"] .stRadio [data-testid="stMarkdownContainer"] p {{
+        color: white !important;
+    }}
+    
+    /* Radio button selected state */
+    section[data-testid="stSidebar"] .st-bc {{
+        background-color: {MUSIGMA_DARK} !important;
+        border-radius: 5px;
+        margin: 2px 0;
     }}
     
     /* Headers */
@@ -164,7 +186,7 @@ st.markdown(f"""
         font-size: 0.9rem !important;
     }}
     
-    /* Dropdown styling - White text on MuSigma color */
+    /* Dropdown styling - FIXED COLORS */
     .stSelectbox > div > div {{
         background-color: {MUSIGMA_PRIMARY} !important;
         color: white !important;
@@ -176,7 +198,7 @@ st.markdown(f"""
         color: white !important;
     }}
     
-    /* Dropdown options */
+    /* Dropdown options - FIXED COLORS */
     .st-bx {{
         background-color: white !important;
         border: 2px solid {MUSIGMA_PRIMARY} !important;
@@ -184,10 +206,12 @@ st.markdown(f"""
     
     .st-bx > div {{
         color: {MUSIGMA_PRIMARY} !important;
+        background-color: white !important;
     }}
     
     .st-bx > div:hover {{
         background-color: {MUSIGMA_LIGHT} !important;
+        color: {MUSIGMA_PRIMARY} !important;
     }}
     
     /* Table styling */
@@ -279,12 +303,31 @@ st.markdown(f"""
         flex-direction: column;
         height: 100%;
     }}
+    
+    /* Sidebar header styling */
+    .sidebar-header {{
+        background-color: {MUSIGMA_PRIMARY};
+        padding: 2rem 1rem;
+        text-align: center;
+        margin: -1rem -1rem 2rem -1rem;
+    }}
+    
+    .sidebar-title {{
+        color: white;
+        margin: 0;
+        font-size: 1.5rem;
+    }}
+    
+    .sidebar-subtitle {{
+        color: {MUSIGMA_LIGHT};
+        margin: 0;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
 # ---------- Configuration & Data Path ----------
 
-#  IMPORTANT: Replace with your actual path if needed
+# IMPORTANT: Replace with your actual path if needed
 ABSOLUTE_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "attendance.xlsx") 
 
 DATA_FILE = ABSOLUTE_DATA_PATH
@@ -318,6 +361,32 @@ COL_EXEMPT = "Excemptions"
 COL_UNALLOC = "Unallocated"
 
 # --- Utility functions ---
+
+def find_logo():
+    """Find the logo file in multiple possible locations"""
+    for logo_path in LOGO_PATHS:
+        if os.path.exists(logo_path):
+            return logo_path
+    return None
+
+def load_logo_base64():
+    """Load logo and convert to base64 for embedding in HTML"""
+    logo_path = find_logo()
+    
+    if logo_path:
+        try:
+            with open(logo_path, "rb") as img_file:
+                logo_base64 = base64.b64encode(img_file.read()).decode()
+                return logo_base64
+        except Exception as e:
+            st.sidebar.warning(f"⚠️ Could not load logo: {e}")
+            return None
+    else:
+        # Show available paths for debugging
+        st.sidebar.warning("⚠️ Logo not found. Checked paths:")
+        for path in LOGO_PATHS:
+            st.sidebar.write(f"   - {path}")
+        return None
 
 @st.cache_data
 def parse_time_or_duration(x):
@@ -528,19 +597,28 @@ def create_boxplot_shift_patterns(data, title):
 # --------------------------------------------------------------------------------
 # ---------- MODULE FUNCTIONS ----------
 
-def executive_overview(df_raw):
-    # Custom header for this page
+def create_header(page_subtitle, logo_base64=None):
+    """Create consistent header across all pages"""
+    logo_html = ""
+    if logo_base64:
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="logo-img" alt="MuSigma Logo">'
+    else:
+        logo_html = '<div style="color: white; font-size: 0.8rem; text-align: center;">MuSigma<br>Logo</div>'
+    
     st.markdown(f"""
     <div class="main-header">
         <div>
             <div class="brand-title">MuTaskSpark</div>
-            <div class="brand-subtitle">Executive Overview </div>
+            <div class="brand-subtitle">{page_subtitle}</div>
         </div>
-        <div class="logo-space">
-            Mu Sigma
+        <div class="logo-container">
+            {logo_html}
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+def executive_overview(df_raw, logo_base64=None):
+    create_header("Executive Overview", logo_base64)
     
     st.header("Select Filters")
     
@@ -713,6 +791,7 @@ def comparison_chart(df, emp_row):
     metrics = [COL_BAY + "_hrs_float", COL_BREAK + "_hrs_float", COL_CAFE + "_hrs_float", COL_OOO + "_hrs_float"]
     emp_vals = [emp_row.get(m, 0) for m in metrics]
     comp_vals = [df[m].mean() for m in metrics]
+    
     df_compare = pd.DataFrame({
         "Metric":["Bay","Break","Cafeteria","OOO"],
         "Employee":emp_vals,
@@ -731,19 +810,8 @@ def hours_to_hhmm(hours):
     m = int(round((hours - h) * 60))
     return f"{h:02d}:{m:02d} hrs"
 
-def employee_level_analysis(df):
-    # Custom header for this page
-    st.markdown(f"""
-    <div class="main-header">
-        <div>
-            <div class="brand-title">MuTaskSpark</div>
-            <div class="brand-subtitle">Employee Performance Analytics</div>
-        </div>
-        <div class="logo-space">
-            MuSigma Logo
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+def employee_level_analysis(df, logo_base64=None):
+    create_header("Employee Performance Analytics", logo_base64)
     
     st.header("Select Employee Id👤")
 
@@ -895,19 +963,8 @@ def employee_level_analysis(df):
 
     st.divider()
 
-def account_level_analysis(df_full):
-    # Custom header for this page
-    st.markdown(f"""
-    <div class="main-header">
-        <div>
-            <div class="brand-title">MuTaskSpark</div>
-            <div class="brand-subtitle">Account Performance Analytics</div>
-        </div>
-        <div class="logo-space">
-            MuSigma Logo
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+def account_level_analysis(df_full, logo_base64=None):
+    create_header("Account Performance Analytics", logo_base64)
     
     st.header("Select Account 🏢")
 
@@ -1132,41 +1189,52 @@ def account_level_analysis(df_full):
 # --------------------------------------------------------------------------------
 # ---------- MAIN APP EXECUTION ----------
 
-try:
-    df_raw = run_models(load_and_prep(DATA_FILE))
-    if df_raw.empty:
+def main():
+    # Load logo at the start
+    logo_base64 = load_logo_base64()
+    
+    try:
+        df_raw = run_models(load_and_prep(DATA_FILE))
+        if df_raw.empty:
+            st.stop()
+    except Exception as e:
+        st.error(f"Failed to load or process data: {e}")
         st.stop()
-except Exception as e:
-    st.error(f"Failed to load or process data: {e}")
-    st.stop()
 
-# --- SIDEBAR NAVIGATION ---
-st.sidebar.markdown(f"""
-<div style='background-color: {MUSIGMA_PRIMARY}; padding: 2rem 1rem; text-align: center; margin: -1rem -1rem 2rem -1rem;'>
-    <h2 style='color: white; margin: 0; font-size: 1.5rem;'>MuTaskSpark</h2>
-    <p style='color: {MUSIGMA_LIGHT}; margin: 0;'>Analytics Dashboard</p>
-</div>
+    # --- SIDEBAR NAVIGATION ---
+    # Sidebar header
+    st.sidebar.markdown(f"""
+        <div class='sidebar-header' style='text-align: center; color: white;'>
+            <h2 class='sidebar-title' style='color: white; margin-bottom: 0;'>MuTaskSpark</h2>
+            <p class='sidebar-subtitle' style='color: #f0f0f0; font-size: 0.9rem; margin-top: 0;'>Analytics Dashboard</p>
+        </div>
 """, unsafe_allow_html=True)
 
-PAGES = {
+# White "Navigation" heading placed immediately above radio buttons
+    st.sidebar.markdown("<h2 style='color: white; margin-bottom: 0.5rem;'>Navigation</h2>", unsafe_allow_html=True)
+    PAGES = {
     "🏢 Executive Overview": executive_overview,
     "👤 Employee Analysis": employee_level_analysis,
     "📊 Account Analytics": account_level_analysis
-}
+    }
+# Sidebar navigation options
+    selection = st.sidebar.radio("Go to:", list(PAGES.keys()))
+    # Footer in sidebar
+    st.sidebar.markdown(f"""
+        <div style='margin-top: 3rem; padding: 1rem; background-color: {MUSIGMA_DARK}; border-radius: 0.5rem;'>
+            <p style='color: white; text-align: center; margin: 0; font-size: 0.8rem;'>
+                <b>MuSigma</b><br>
+                Decision Sciences & Analytics
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-st.sidebar.title("Navigation")
-selection = st.sidebar.radio("Go to:", list(PAGES.keys()))
+    # Render selected page
+    page_func = PAGES[selection]
+    page_func(df_raw, logo_base64)
 
-# Footer in sidebar
-st.sidebar.markdown(f"""
-<div style='margin-top: 3rem; padding: 1rem; background-color: {MUSIGMA_DARK}; border-radius: 0.5rem;'>
-    <p style='color: white; text-align: center; margin: 0; font-size: 0.8rem;'>
-        <b>MuSigma</b><br>
-        Decision Sciences & Analytics
-    </p>
-</div>
-""", unsafe_allow_html=True)
 
-# RENDER SELECTED PAGE
-page_func = PAGES[selection]
-page_func(df_raw)
+
+if __name__ == "__main__":
+    main()
+   
